@@ -3,140 +3,13 @@
 Author: John Naulty Jr.
 
 
-
-```python
-import pprint
-import json
-
-import requests
-import pandas as pd
-import geopandas
-import matplotlib.pyplot as plt
-
-pp = pprint.PrettyPrinter(indent=4)
-```
-
 ### Interfacing with the bitnode api
 
-
-```python
-# https://bitnodes.io/api/
-
-
-def make_request(url):
-    r = requests.get(url)
-    if r.status_code == 200:
-        return r.json()
-    return False
-
-def write_json(file_name, json_data):
-    """
-    store responses in json files
-    """
-    with open(file_name, 'w', encoding='utf-8') as f:
-        json.dump(json_data, f, ensure_ascii=False, indent=4)
-        
-def load_json(file_name):
-    with open(file_name) as json_file:
-        data = json.load(json_file)
-        return data
-    
-    
-
-def list_snapshot(save_response=False):
-    """https://bitnodes.io/api/v1/snapshots/"""
-    snapshot_url = "https://bitnodes.io/api/v1/snapshots/"
-    snapshots = make_request(snapshot_url)
-    pp.pprint(snapshots)
-    if save_response:
-        count = snapshots["count"]
-        file_name = f"{count}.snapshots.json"
-        print(f"writing file to: {file_name}")
-        write_json(file_name, snapshots)
-        
-
-def get_nodes(snapshot_timestamp="latest", save_response=False):
-    """
-    https://bitnodes.io/api/v1/snapshots/<TIMESTAMP>/
-    <TIMESTAMP> can be replaced with "latest" to get the list of all reachable nodes from the latest snapshot.
-
-    """
-    nodes_url = f"https://bitnodes.io/api/v1/snapshots/{snapshot_timestamp}"
-    nodes = make_request(nodes_url)
-    
-    pp.pprint(nodes)
-    if save_response:
-        height = nodes["latest_height"]
-        file_name = f"{height}.{snapshot_timestamp}.nodes.json"
-        print(f"writing file to: {file_name}")
-        write_json(file_name, nodes)
-    return nodes
-
-def tx_data_propagation(transaction):
-    """
-    https://bitnodes.io/api/#data-propagation
-    https://bitnodes.io/api/v1/inv/<INV_HASH>/
-    Values in stats represent the following information:
-
-    head - Arrival times for the first 10 nodes in a list of ["<ADDRESS>:<PORT>", <TIMESTAMP>].
-    min - Delta for earliest arrival time. Value can be 0 if the delta is less than 1 millisecond.
-    max - Delta for latest arrival time.
-    mean - Average of deltas.
-    std - Standard deviation of deltas.
-    50% - 50th percentile of deltas.
-    90% - 90th percentile of deltas.
-    """
-    pass
-
-```
-
-### Saving Snapshot Data to Disk
-
-
-```python
-# list_snapshot(save_response=True)
-# nodes = get_nodes(save_response=True)
-```
-
-### Loading Snapshot Data from Disk
-
-
-```python
-nodes = load_json("628680.latest.nodes.json")
-```
 
 ## Data Processing with Pandas
 
 
-```python
 
-
-headers = [
-    "Protocol version",
-    "User agent",
-    "Connected since",
-    "Services",
-    "Height",
-    "Hostname",
-    "City",
-    "Country code",
-    "Latitude",
-    "Longitude",
-    "Timezone",
-    "ASN",
-    "Organization name"
-]
-
-node_df = pd.DataFrame.from_dict(nodes['nodes'], orient='index',columns=headers)
-node_df = node_df.fillna('')
-
-
-node_df[["User agent", "Country code", "Organization name" ]].describe()
-org_name = node_df["Organization name"]
-
-print(node_df[["Country code", "Organization name"]].describe())
-print()
-print(org_name.value_counts(normalize=True).nlargest(10))
 
 ```
 
@@ -158,108 +31,39 @@ print(org_name.value_counts(normalize=True).nlargest(10))
     Charter Communications Inc           0.013537
     Name: Organization name, dtype: float64
 
-
-
-```python
-org_name.value_counts(normalize=True).nlargest(10).plot.bar()
 ```
 
 
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x77d845278c18>
-
-
-
+### ISP Provider / Network
 
 ![png](output_10_1.png)
 
 
 
-```python
-gdf = geopandas.GeoDataFrame(
-    node_df, crs="epsg:4269", geometry=geopandas.points_from_xy(node_df.Longitude, node_df.Latitude))
-gdf = gdf.fillna('')
-#gdf.geometry.head()
-```
-
-
-```python
-world = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
-world = world[~world.continent.isin(['Antarctica'])]
-
-# We restrict to South America.
-ax = world.plot(color='lightgrey', linewidth=1, edgecolor='black', figsize=(150,50))
-
-# We can now plot our ``GeoDataFrame``.
-gdf.plot(markersize=100, color='blue', alpha=0.5, ax=ax)
-ax.axis('off')
-plt.show()
-
-```
-
+### Worldwide Distribution of Peers
 
 ![png](output_12_0.png)
 
 
 
-```python
-states = geopandas.read_file("shape-data/cb_2018_us_state_500k/cb_2018_us_state_500k.shp")
-# Get rid of Guam, Mariana Islands and Virgin Islands
-states = states[states.STATEFP.astype(int) < 60]
-# Get rid of Hawaii and Alaska
-states = states[~states.NAME.isin(['Hawaii', 'Alaska'])]
-#states.tail(5)
-```
-
-
-```python
-ax = states.plot(color='lightgrey', linewidth=1, edgecolor='black', figsize=(150,50))
-
-# We can now plot our ``GeoDataFrame``.
-#gdf.plot(markersize=10, color='pink', alpha=0.5, ax=ax)
-
-us_intersection = geopandas.overlay(gdf, states, how='intersection')
-us_intersection.plot(markersize=1000, color='blue', alpha=0.5, ax=ax)
-ax.axis('off')
-plt.show()
-```
-
+### US Distribution of Peers
 
 ![png](output_14_0.png)
 
 
-
-```python
-gdf = gdf.fillna('')
-comcast_nodes = gdf[gdf["Organization name"].str.contains('Comcast')]
-comcast_intersection = geopandas.overlay(comcast_nodes, states, how='intersection')
-ax = states.plot(color='lightgrey', linewidth=0.5, edgecolor='black', figsize=(150,50))
-comcast_intersection.plot(markersize=1000, color='blue', alpha=0.5, ax=ax)
-ax.axis('off')
-plt.show()
-```
+### US Distribution of Peers of Comcast Users
 
 
 ![png](output_15_0.png)
 
 
-
-```python
-us_intersection["Organization name"].value_counts(normalize=True).nlargest(5).plot.bar()
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x77d844a9c5c0>
-
-
+### US ISP Distribution 
 
 
 ![png](output_16_1.png)
 
 
+### US State Distribution 
 
 ```python
 us_intersection["NAME"].value_counts(normalize=True).nlargest(10)
@@ -666,22 +470,8 @@ us_intersection[["NAME", "Organization name"]].groupby('NAME').describe()
 
 
 
-```python
-comcast_intersection["NAME"].value_counts(normalize=True).nlargest(10).plot.bar()
-```
 
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x77d844a3d710>
-
-
-
+### US State Distribution Graph
 
 ![png](output_19_1.png)
 
-
-
-```python
-
-```

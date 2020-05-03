@@ -2,14 +2,23 @@
 
 Author: John Naulty Jr.
 
+### Info
 
-### Interfacing with the bitnode api
+[bitnode.io](https://bitnodes.io/) collects information on bitcoin peers and offers their API for free.
+
+The creator has the source code for this project hosted on github at [ayeowch/bitnodes](https://github.com/ayeowch/bitnodes).
+
+Before I started running this code, I wanted to play around with the API.
+
+These are the preliminary results.
 
 
-## Data Processing with Pandas
+## Diving In
 
+### World Statistics
 
-
+Most popular country is the US
+Most popular network is Tor
 
 ```
 
@@ -34,7 +43,7 @@ Author: John Naulty Jr.
 ```
 
 
-### ISP Provider / Network
+### Top ISP Provider / Network for World
 
 ![png](output_10_1.png)
 

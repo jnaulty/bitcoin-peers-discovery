@@ -13,12 +13,14 @@ Before I started running this code, I wanted to play around with the API.
 These are the preliminary results.
 
 
-## Diving In
+## Looking at the Data
 
 ### World Statistics
 
 Most popular country is the US
 Most popular network is Tor
+
+![png](assets/peers-in-countries.png)
 
 ```
 
@@ -43,36 +45,83 @@ Most popular network is Tor
 ```
 
 
-### Top ISP Provider / Network for World
+#### Top ISP Provider / Network for World
 
-![png](output_10_1.png)
-
-
-
-### Worldwide Distribution of Peers
-
-![png](output_12_0.png)
+![png](assets/output_10_1.png)
 
 
-
-### US Distribution of Peers
-
-![png](output_14_0.png)
+#### Worldwide Distribution of Peers
 
 
-### US Distribution of Peers of Comcast Users
+![png](assets/output_12_0.png)
 
 
-![png](output_15_0.png)
+
+### US Statistics 
+
+#### US Distribution of Peers
+
+![png](assets/output_14_0.png)
 
 
-### US ISP Distribution 
+#### US Distribution of Peers of Comcast Users
 
 
-![png](output_16_1.png)
+![png](assets/output_15_0.png)
 
 
-### US State Distribution 
+#### US ISP Distribution 
+
+
+![png](assets/output_16_1.png)
+
+
+#### ISP Distribution by State
+
+##### Comcast Distribution 
+
+
+![png](assets/output_19_1.png)
+
+![png](assets/output_22_0.png)
+
+##### Amazon Distribution 
+
+
+![png](assets/output_26_0.png)
+
+##### Charter ISP Distribution 
+
+
+![png](assets/output_27_0.png)
+
+### State Distribution by ISP
+
+##### California ISP Distribution 
+
+![png](assets/output_24_1.png)
+
+##### Virginia ISP Distribution 
+
+![png](assets/virginia-isp.png)
+
+##### New Jersey ISP Distribution 
+
+![png](assets/jersey-isp.png)
+
+##### Texas ISP Distribution 
+
+![png](assets/texas-isp.png)
+
+##### Kansas ISP Distribution 
+
+![png](assets/kansas-isp.png)
+
+##### Washington ISP Distribution 
+
+![png](assets/washington-isp.png)
+
+### US State/ISP Comparison
 
 ```python
 us_intersection["NAME"].value_counts(normalize=True).nlargest(10)
@@ -93,6 +142,8 @@ us_intersection["NAME"].value_counts(normalize=True).nlargest(10)
     Florida       0.024483
     Name: NAME, dtype: float64
 
+
+#### US State Distribution Graph
 
 
 
@@ -480,7 +531,4 @@ us_intersection[["NAME", "Organization name"]].groupby('NAME').describe()
 
 
 
-### US State Distribution Graph
-
-![png](output_19_1.png)
 
